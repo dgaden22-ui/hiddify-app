@@ -49,7 +49,8 @@ class SystemTrayNotifier extends _$SystemTrayNotifier with TrayListener, AppLogg
         .then((connection) => _modifyConnectionStatus(connection, urlTestDelay));
     final serviceMode = ref.watch(ConfigOptions.serviceMode);
 
-    await trayManager.setIcon(_trayIconPath(connection), isTemplate: PlatformUtils.isMacOS);
+    // Colored icons on every platform (a macOS template icon would be monochrome).
+    await trayManager.setIcon(_trayIconPath(connection));
     if (!PlatformUtils.isLinux) await trayManager.setToolTip(_trayTooltip(connection, urlTestDelay, t));
     await trayManager.setContextMenu(_trayMenu(connection, serviceMode, t));
   }
@@ -90,10 +91,10 @@ class SystemTrayNotifier extends _$SystemTrayNotifier with TrayListener, AppLogg
     switch (status) {
       case Connected():
         return isWindows ? images.trayIconConnectedIco : images.trayIconConnectedPng.path;
+      case Disconnected():
+        return isWindows ? images.trayIconDisconnectedIco : images.trayIconDisconnectedPng.path;
       case Connecting():
       case Disconnecting():
-        return isWindows ? images.trayIconDisconnectedIco : images.trayIconDisconnectedPng.path;
-      case Disconnected():
         return isWindows
             ? isDarkMode
                   ? images.trayIconIco

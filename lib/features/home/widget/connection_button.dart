@@ -81,7 +81,7 @@ class ConnectionButton extends HookConsumerWidget {
       buttonColor: switch (look) {
         _Look.connected => buttonTheme.connectedColor!,
         _Look.noPing || _Look.hotReloading => const Color.fromARGB(255, 185, 176, 103),
-        _Look.failed => Colors.red,
+        _Look.failed || _Look.disconnected => const Color(0xFFEF4444),
         _ => buttonTheme.idleColor!,
       },
       image: switch (look) {
@@ -199,7 +199,7 @@ class _ConnectionButton extends HookWidget {
                 Material(
                   key: const ValueKey("home_connection_button"),
                   shape: const CircleBorder(),
-                  color: Colors.white,
+                  color: theme.brightness == Brightness.dark ? const Color(0xFF121A2B) : Colors.white,
                   elevation: 3,
                   shadowColor: Colors.black,
                   surfaceTintColor: Colors.transparent,
