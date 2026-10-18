@@ -72,7 +72,7 @@ class RoutingOptionsPage extends HookConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // native, so it applies before every rule
-            if (PlatformUtils.isAndroid) const _AppBasedRoutingSection(),
+            if (PlatformUtils.isAndroid) const AppBasedRoutingSection(),
             const _PinnedOptions(),
           ],
         ),
@@ -180,8 +180,11 @@ class _RegionFlag extends StatelessWidget {
 }
 
 /// App-based routing works through the Android VPN app list, so it sits above the rules and can't be moved.
-class _AppBasedRoutingSection extends ConsumerWidget {
-  const _AppBasedRoutingSection();
+class AppBasedRoutingSection extends ConsumerWidget {
+  const AppBasedRoutingSection({super.key, this.appListRoute = 'appList'});
+
+  /// Route that opens the app picker, so the section can live in more than one branch.
+  final String appListRoute;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -221,7 +224,7 @@ class _AppBasedRoutingSection extends ConsumerWidget {
             trailing: Switch(value: mode != null, onChanged: service.setEnabled),
           ),
           if (mode != null) ...[
-            _AppListRow(mode: mode),
+            _AppListRow(mode: mode, appListRoute: appListRoute),
             if (region != Region.other) ...[
               const Divider(height: 1, indent: 16, endIndent: 16),
               _AutoSelection(region: region),
@@ -266,9 +269,10 @@ class _ModeOption extends StatelessWidget {
 }
 
 class _AppListRow extends ConsumerWidget {
-  const _AppListRow({required this.mode});
+  const _AppListRow({required this.mode, required this.appListRoute});
 
   final AppProxyMode mode;
+  final String appListRoute;
 
   static const _maxLogos = 10;
   static const _loadingLogo = ClipOval(child: ShimmerSkeleton(width: 24, height: 24));
@@ -287,7 +291,7 @@ class _AppListRow extends ConsumerWidget {
       leading: leading,
       title: title,
       trailing: const Icon(Icons.chevron_right_rounded),
-      onTap: () => context.goNamed('appList'),
+      onTap: () => context.goNamed(appListRoute),
     );
 
     // placeholders until the list loads, at the loaded row's height, so nothing jumps

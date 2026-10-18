@@ -10,6 +10,7 @@ import 'package:hiddify/core/router/go_router/helper/custom_transition.dart';
 import 'package:hiddify/core/router/go_router/refresh_listenable.dart';
 import 'package:hiddify/features/about/widget/about_page.dart';
 import 'package:hiddify/features/app_based_routing/overview/app_list_page.dart';
+import 'package:hiddify/features/app_based_routing/widget/app_routing_tab_page.dart';
 import 'package:hiddify/features/home/widget/home_page.dart';
 import 'package:hiddify/features/intro/widget/intro_page.dart';
 import 'package:hiddify/features/log/overview/logs_page.dart';
@@ -36,6 +37,7 @@ part 'routing_config_notifier.g.dart';
 // each branch in go router has its own focus scope
 final branchesScope = <String, FocusScopeNode>{
   'home': FocusScopeNode(),
+  'apps': FocusScopeNode(),
   'profiles': FocusScopeNode(),
   'settings': FocusScopeNode(),
   'logs': FocusScopeNode(),
@@ -47,12 +49,15 @@ final loadingConfig = RoutingConfig(
   routes: <RouteBase>[GoRoute(path: '/home', builder: (context, state) => const Material())],
 );
 
+/// DgadenVPN: on Android phones, app-based routing has its own tab between home and settings.
+bool showAppsTab(bool isMobileBreakpoint) => isMobileBreakpoint && PlatformUtils.isAndroid;
+
 String getNameOfBranch(bool isMobileBreakpoint, bool showProfilesAction, int index) => isMobileBreakpoint
-    ? ['home', 'settings'][index]
+    ? ['home', if (showAppsTab(isMobileBreakpoint)) 'apps', 'settings'][index]
     : ['home', if (showProfilesAction) 'profiles', 'settings', 'logs', 'about'][index];
 
 int getIndexOfBranch(bool isMobileBreakpoint, bool showProfilesAction, String name) => isMobileBreakpoint
-    ? ['home', 'settings'].indexOf(name)
+    ? ['home', if (showAppsTab(isMobileBreakpoint)) 'apps', 'settings'].indexOf(name)
     : ['home', if (showProfilesAction) 'profiles', 'settings', 'logs', 'about'].indexOf(name);
 
 @Riverpod(keepAlive: true)
@@ -148,6 +153,24 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                 ),
               ],
             ),
+            if (showAppsTab(isMobileBreakpoint))
+              StatefulShellBranch(
+                routes: <GoRoute>[
+                  GoRoute(
+                    name: 'apps',
+                    path: '/apps',
+                    builder: (_, _) => FocusScope(node: branchesScope['apps'], child: const AppRoutingTabPage()),
+                    routes: <GoRoute>[
+                      GoRoute(
+                        name: 'tabAppList',
+                        path: 'app-list',
+                        pageBuilder: (_, state) =>
+                            customTransition(TransitionType.slide, state.pageKey, const AppListPage()),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             if (showProfilesAction)
               StatefulShellBranch(
                 routes: <GoRoute>[
