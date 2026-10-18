@@ -351,6 +351,7 @@
             "proxy": "Proxied apps"
           },
           "chooseApps": "Choose apps",
+          "navLabel": "Apps",
           "apps": {
             "one": "app",
             "other": "apps"
