@@ -391,8 +391,8 @@
             "clearAllSelections": "Clear all selections"
           },
           "modes": {
-            "proxy": "Proxy only",
-            "bypass": "Bypass"
+            "proxy": "Selected apps through VPN",
+            "bypass": "All traffic through VPN except selected apps"
           },
           "autoSelection": {
             "title": "Auto selection based on $region",
