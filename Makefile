@@ -284,7 +284,9 @@ android-aab-release:
 	  --build-dart-define=sentry_dsn=$(SENTRY_DSN) \
 	  --build-dart-define=release=google-play
 
-windows-release: windows-zip-release windows-exe-release windows-msix-release
+# DgadenVPN: the MSIX (Microsoft Store) package needs a signing certificate, so it is
+# left out; run `make windows-msix-release` separately once windows/sign.pfx exists.
+windows-release: windows-zip-release windows-exe-release
 
 windows-zip-release:
 	fastforge package \
