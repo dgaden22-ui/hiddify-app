@@ -414,46 +414,26 @@ jobs:
         run: ls -R
         working-directory: ./out
 
-      - name: Delete Current Release Assets
-        uses: 8Mi-Tech/delete-release-assets-action@main
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'draft'
-          deleteOnlyFromDrafts: false
-          
       - name: prepare_release_message
         continue-on-error: true
         run: |
           set +e 
           # DgadenVPN: only the download table, no changelog of upstream Hiddify commits.
           sed 's|RELEASE_TAG|${{ env.TAG_NAME }}|g' ./.github/release_message.md > release.md
-      - name: Create or Update Draft Release
-        uses: softprops/action-gh-release@v2
+
+      # DgadenVPN: replace the build release instead of editing it. GITHUB_TOKEN may not
+      # update an existing release once a commit changes workflow files, but it may create one.
+      - name: Publish build release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          files: ./out/*
-          name: 'draft'
-          tag_name: 'draft'
-          body_path: './release.md'
-          prerelease: true
-
-      - name: Create or Update Draft Release
-        uses: softprops/action-gh-release@v3
-        # env:
-          #GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_HIDDIFY_APP_REPO }}
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#          GITHUB_REPOSITORY: hiddify/hiddify-app
-        with:
-          files: ./out/*
-          name: 'draft'
-          tag_name: 'draft'
-          body_path: './release.md'
-          target_commitish: ${{ github.sha }}
-          # target_commitish: '530bf77839a74d4f13847ba244a20734ac7ab119'
-          prerelease: true
-          # repository: hiddify/hiddify-app
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete draft --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || echo "no previous release"
+          gh release create draft ./out/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "DgadenVPN" \
+            --notes-file release.md \
+            --prerelease \
+            --target "$GITHUB_SHA"
 
   upload-release:
     permissions: write-all
