@@ -7,6 +7,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hiddify/core/analytics/analytics_controller.dart';
 import 'package:hiddify/core/app_info/app_info_provider.dart';
 import 'package:hiddify/core/directories/directories_provider.dart';
+import 'package:hiddify/core/http_client/extra_root_certs.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/logger/logger.dart';
 import 'package:hiddify/core/logger/logger_setup.dart';
@@ -39,6 +40,8 @@ Future<void> lazyBootstrap(WidgetsBinding widgetsBinding, Environment env) async
   }
   // phase 1 — console and the in-memory history, before the folders are known
   logStart();
+  // before any request: subscriptions are fetched with the default TLS context
+  trustExtraRootCertificates();
   FlutterError.onError = Logger.logFlutterError;
   WidgetsBinding.instance.platformDispatcher.onError = Logger.logPlatformDispatcherError;
 

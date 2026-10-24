@@ -10,10 +10,12 @@
 import 'dart:async';
 import 'dart:developer' as dev;
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kReleaseMode;
 import 'package:hiddify/core/logger/log_level_compat.dart';
 import 'package:hiddify/core/logger/ring/log_ring.dart';
 import 'package:hiddify/core/logger/sinks/file_sink.dart';
+import 'package:hiddify/core/model/failures.dart';
 import 'package:logging/logging.dart';
 
 /// one place that turns a record into one line of text
@@ -28,7 +30,32 @@ String formatRecord(LogRecord r) {
 /// all show the message, so this is the one place that reaches all three.
 String messageOf(LogRecord r) {
   final origin = originOf(r.stackTrace);
-  return origin == null ? r.message : '${r.message}  <-  $origin';
+  final message = _withError(r);
+  return origin == null ? message : '$message  <-  $origin';
+}
+
+/// DgadenVPN: the error a record carries, appended to its message.
+///
+/// Records such as "failed to add profile" pass the reason as the error, and
+/// the message alone said nothing about it in the logs page or app.log.
+String _withError(LogRecord r) {
+  final error = r.error;
+  if (error == null) return r.message;
+  final text = _describeError(error);
+  if (text.isEmpty || r.message.contains(text)) return r.message;
+  return '${r.message}: $text';
+}
+
+String _describeError(Object error, [int depth = 0]) {
+  if (depth > 4) return error.toString();
+  final text = switch (error) {
+    UnexpectedFailure(error: final inner?) => _describeError(inner, depth + 1),
+    DioException(:final type, error: final cause, :final message) =>
+      'DioException[${type.name}]${message == null ? '' : ' $message'}'
+          '${cause == null ? '' : ': ${_describeError(cause, depth + 1)}'}',
+    _ => error.toString(),
+  };
+  return text.length > 600 ? '${text.substring(0, 600)}…' : text;
 }
 
 /// the history the logs page reads
