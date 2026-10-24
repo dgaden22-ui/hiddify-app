@@ -1,9 +1,10 @@
-app_id: 6L903538-42B1-4596-G479-BJ779F21A65D
-publisher: Hiddify
-publisher_url: https://github.com/hiddify/hiddify-app
-display_name: Hiddify
+app_id: 520EAEFA-76A5-41BE-BE27-BC796C4649F5
+publisher: Dgaden
+publisher_url: https://github.com/dgaden22-ui/hiddify-app
+display_name: DgadenVPN
+executable_name: DgadenVPN.exe
 create_desktop_icon: true
-install_dir_name: "{autopf64}\\Hiddify"
+install_dir_name: "{autopf64}\\DgadenVPN"
 setup_icon_file: windows\runner\resources\app_icon.ico
 locales:
   - ar
