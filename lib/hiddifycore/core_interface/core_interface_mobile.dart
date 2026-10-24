@@ -25,8 +25,9 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
   late Uint8List serverPublicKey;
   static final cert = CryptoUtils.generateEcKeyPair();
 
-  static const portBack = 17079;
-  static const portFront = 17078;
+  // DgadenVPN: own ports, so the core never collides with an installed Hiddify.
+  static const portBack = 17179;
+  static const portFront = 17178;
 
   bool _isBgClientAvailable = false;
   bool _debug = false;

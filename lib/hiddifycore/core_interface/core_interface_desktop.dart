@@ -54,7 +54,9 @@ class CoreInterfaceDesktop extends CoreInterface with InfraLogger {
     }
   }
 
-  final port = 17078;
+  // DgadenVPN: Hiddify's core listens on 17078. Sharing it made this app talk to
+  // Hiddify's core whenever Hiddify was running, so DgadenVPN uses its own port.
+  final port = 17178;
   static String generateRandomPassword(int length) {
     const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random();

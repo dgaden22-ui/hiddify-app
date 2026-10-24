@@ -104,24 +104,25 @@ abstract class ConfigOptions {
     mapTo: (value) => value.key,
   );
 
+  // DgadenVPN: local ports are Hiddify's + 100, so both apps can run on one device.
   static final mixedPort = PreferencesNotifier.create<int, int>(
     "mixed-port",
-    12334,
+    12434,
     validator: (value) => isPort(value.toString()),
   );
   static final tproxyPort = PreferencesNotifier.create<int, int>(
     "tproxy-port",
-    12335,
+    12435,
     validator: (value) => isPort(value.toString()),
   );
   static final redirectPort = PreferencesNotifier.create<int, int>(
     "redirect-port",
-    12336,
+    12436,
     validator: (value) => isPort(value.toString()),
   );
   static final directPort = PreferencesNotifier.create<int, int>(
     "direct-port",
-    12337,
+    12437,
     validator: (value) => isPort(value.toString()),
   );
 
@@ -170,7 +171,7 @@ abstract class ConfigOptions {
 
   static final clashApiPort = PreferencesNotifier.create<int, int>(
     "clash-api-port",
-    16756,
+    16856,
     validator: (value) => isPort(value.toString()),
   );
 
