@@ -24,6 +24,7 @@ import 'package:hiddify/core/router/go_router/go_router_notifier.dart';
 import 'package:hiddify/features/app_update/model/remote_version_entity.dart';
 import 'package:hiddify/features/common/qr_code_dialog.dart';
 import 'package:hiddify/features/common/qr_code_scanner_screen.dart';
+import 'package:hiddify/features/profile/receive/receive_profile_dialog.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
 import 'package:hiddify/singbox/model/singbox_config_enum.dart';
@@ -51,6 +52,11 @@ class DialogNotifier extends _$DialogNotifier {
 
   Future<String?> showQrScanner() async {
     return await _show<String?>(const QrCodeScannerDialog());
+  }
+
+  /// DgadenVPN: shows a QR code a phone scans to send a subscription here.
+  Future<void> showReceiveFromPhone() async {
+    return await _show<void>(const ReceiveProfileDialog());
   }
 
   Future<void> showSortProfiles() async {

@@ -6,9 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/constants.dart';
+import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/profile/add/widgets/widgets.dart';
 import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
+import 'package:hiddify/features/profile/receive/phone_transfer.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -73,10 +75,23 @@ class FixBtns extends ConsumerWidget {
             onTap: () async {
               final cr = await ref.read(dialogNotifierProvider.notifier).showQrScanner();
               if (cr == null) return;
+              // a TV's "receive" code, scanned here by mistake: say where it belongs
+              if (isTvReceiveCode(cr)) {
+                ref.read(inAppNotificationControllerProvider).showInfoToast(t.pages.profiles.share.tvCodeHint);
+                return;
+              }
               ref.read(addProfileNotifierProvider.notifier).addClipboard(cr);
             },
           ),
         ],
+        const Gap(AddProfileModalConst.fixBtnsGap),
+        FixBtn(
+          key: const ValueKey('add_from_phone_button'),
+          height: height,
+          title: t.pages.profiles.receive.button,
+          icon: Icons.phonelink_ring,
+          onTap: () => ref.read(dialogNotifierProvider.notifier).showReceiveFromPhone(),
+        ),
         const Gap(AddProfileModalConst.fixBtnsGap),
         FixBtn(
           key: const ValueKey('add_manually_button'),

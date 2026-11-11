@@ -17,6 +17,7 @@ import 'package:hiddify/core/widget/adaptive_menu.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
 import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
 import 'package:hiddify/features/profile/overview/profiles_notifier.dart';
+import 'package:hiddify/features/profile/receive/phone_transfer.dart';
 import 'package:hiddify/gen/fonts.gen.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -392,6 +393,27 @@ class ProfileActionsMenu extends HookConsumerWidget {
                 }
               },
             ),
+            // DgadenVPN: scan the code a TV shows and send it this subscription
+            if (!PlatformUtils.isDesktop)
+              AdaptiveMenuItem(
+                title: t.pages.profiles.share.sendToTv,
+                onTap: () async {
+                  final notifications = ref.read(inAppNotificationControllerProvider);
+                  final generated = LinkParser.generateSubShareLink(url, name);
+                  final link = generated.isEmpty ? url : generated;
+                  final code = await ref.read(dialogNotifierProvider.notifier).showQrScanner();
+                  if (code == null) return;
+                  if (!isTvReceiveCode(code)) {
+                    notifications.showErrorToast(t.pages.profiles.share.notTvCode);
+                    return;
+                  }
+                  if (await sendSubscriptionToTv(code, link)) {
+                    notifications.showSuccessToast(t.pages.profiles.share.sentToTv);
+                  } else {
+                    notifications.showErrorToast(t.pages.profiles.share.sendToTvFailed);
+                  }
+                },
+              ),
           ],
           AdaptiveMenuItem(
             title: t.pages.profiles.share.jsonToClipboard,
