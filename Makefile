@@ -49,11 +49,9 @@ CORE_PRODUCT_NAME=hiddify-core
 CORE_NAME=hiddify-lib
 LIB_NAME=hiddify-core
 
-ifeq ($(CHANNEL),prod)
-	CORE_URL=https://github.com/hiddify/hiddify-core/releases/download/v$(core.version)
-else
-	CORE_URL=https://github.com/hiddify/hiddify-core/releases/download/draft
-endif
+# DgadenVPN: always a fixed core release. The "draft" release moves with upstream,
+# and a newer core no longer fit this app's code (Android build broke in November).
+CORE_URL=https://github.com/hiddify/hiddify-core/releases/download/v$(core.version)
 
 ifeq ($(CHANNEL),prod)
 	TARGET=lib/main_prod.dart
