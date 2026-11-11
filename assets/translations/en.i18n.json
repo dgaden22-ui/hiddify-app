@@ -144,7 +144,23 @@
       "share": {
         "urlToClipboard": "Copy URL",
         "showUrlQr": "Show QR code",
-        "jsonToClipboard": "Copy JSON"
+        "jsonToClipboard": "Copy JSON",
+        "sendToTv": "Send to TV",
+        "sentToTv": "Subscription sent",
+        "sendToTvFailed": "Couldn't send the subscription. The phone and the TV must be on the same Wi-Fi network. If it still fails, turn off the VPN on the phone and try again.",
+        "notTvCode": "This isn't a code from DgadenVPN on a TV",
+        "tvCodeHint": "This code is for sending a subscription. Open the profile menu, then Share > Send to TV."
+      },
+      "receive": {
+        "button": "From phone",
+        "title": "Receive from phone",
+        "hint": "On your phone, open DgadenVPN, open the profile menu, choose Share > Send to TV, and point the camera at this code.",
+        "browserHint": "Or scan the code with the phone camera and paste the subscription link on the page that opens.",
+        "noNetwork": "This device isn't connected to a home network",
+        "pageTitle": "Send a subscription to DgadenVPN",
+        "pageLink": "Subscription link",
+        "pageSend": "Send",
+        "pageDone": "Done. The subscription was sent."
       },
       "msg": {
         "save": {
