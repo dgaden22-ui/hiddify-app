@@ -21,6 +21,8 @@ class Application : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // first, so a crash anywhere after this is recorded for the logs page
+        CrashRecorder.install(this)
 
         Seq.setContext(this)
 
