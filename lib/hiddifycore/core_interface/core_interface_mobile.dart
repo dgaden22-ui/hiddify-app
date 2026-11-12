@@ -14,6 +14,7 @@ import 'package:hiddify/hiddifycore/generated/v2/hello/hello_service.pbgrpc.dart
 import 'package:hiddify/singbox/model/core_status.dart';
 
 import 'package:hiddify/utils/utils.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 
 class CoreInterfaceMobile extends CoreInterface with InfraLogger {
@@ -145,10 +146,29 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
     loggy.info("Waiting for starting core finished");
 
     if (!await waitUntilPort(portBack, true, null)) {
+      await _logServiceTrace();
       await stopMethodChannel();
       return const CoreStatus.stopped(alert: CoreAlert.startService, message: "starting background core...");
     }
     return const CoreStarted();
+  }
+
+  /// DgadenVPN: when the VPN service did not come up, show how far it got.
+  /// The Android side writes each step to this file (ServiceTrace.kt).
+  Future<void> _logServiceTrace() async {
+    try {
+      final dir = await getApplicationSupportDirectory();
+      final file = File('${dir.path}/dgaden_service_trace.txt');
+      if (!await file.exists()) {
+        loggy.error('VPN service did not start, and it left no trace (the start request never reached it)');
+        return;
+      }
+      final lines = (await file.readAsLines()).where((l) => l.trim().isNotEmpty).toList();
+      final last = lines.length > 25 ? lines.sublist(lines.length - 25) : lines;
+      loggy.error('VPN service did not start. Its last steps:\n${last.join('\n')}');
+    } catch (e) {
+      loggy.warning('could not read the VPN service trace', e);
+    }
   }
 
   @override

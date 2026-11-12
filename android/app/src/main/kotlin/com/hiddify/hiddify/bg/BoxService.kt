@@ -146,6 +146,7 @@ class BoxService(
         try {
             status.postValue(Status.Starting)
             Log.d(TAG, "starting service")
+            com.hiddify.hiddify.ServiceTrace.log("service: starting the core")
             withContext(Dispatchers.Main) {
                 notification.show(activeProfileName, R.string.status_starting)
             }
@@ -185,9 +186,11 @@ class BoxService(
 //                Libbox.newService(content,platformInterface)
 
             } catch (e: Exception) {
+                com.hiddify.hiddify.ServiceTrace.log("service: core setup failed: $e")
                 stopAndAlert(Alert.CreateService, e.message)
                 return
             }
+            com.hiddify.hiddify.ServiceTrace.log("service: core listening on port ${Settings.grpcServiceModePort}")
             status.postValue(Status.Started)
 
             if (Settings.startCoreAfterStartingService){
@@ -207,6 +210,7 @@ class BoxService(
             }
             notification.start()
         } catch (e: Exception) {
+            com.hiddify.hiddify.ServiceTrace.log("service: start failed: $e")
             stopAndAlert(Alert.StartService, e.message)
             return
         }
@@ -312,6 +316,7 @@ class BoxService(
     }
 
     private suspend fun stopAndAlert(type: Alert, message: String? = null) {
+        com.hiddify.hiddify.ServiceTrace.log("service: stopped with alert $type ${message ?: ""}")
         Settings.startedByUser = false
         withContext(Dispatchers.Main) {
             if (receiverRegistered) {
@@ -329,6 +334,7 @@ class BoxService(
     @OptIn(DelicateCoroutinesApi::class)
     @Suppress("SameReturnValue")
     internal fun onStartCommand(): Int {
+        com.hiddify.hiddify.ServiceTrace.log("service: onStartCommand (status ${status.value})")
         if (status.value != Status.Stopped) return Service.START_NOT_STICKY
         status.value = Status.Starting
 

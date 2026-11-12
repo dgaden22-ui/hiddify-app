@@ -60,7 +60,9 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
 
     @SuppressLint("NewApi")
     fun startService() {
+        ServiceTrace.log("connect requested (Android ${Build.VERSION.SDK_INT}, ${Build.MANUFACTURER} ${Build.MODEL})")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !ServiceNotification.checkPermission()) {
+            ServiceTrace.log("asking for the notification permission")
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             return
         }
@@ -72,6 +74,7 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
             if (Settings.rebuildServiceMode()) {
                 connection.reconnect()
             }
+            ServiceTrace.log("service mode: ${Settings.serviceMode}")
             if (Settings.serviceMode == ServiceMode.VPN) {
                 if (prepare()) {
                     return@launch
@@ -79,7 +82,13 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
             }
             val intent = Intent(Application.application, Settings.serviceClass())
             withContext(Dispatchers.Main) {
-                ContextCompat.startForegroundService(this@MainActivity, intent)
+                try {
+                    ContextCompat.startForegroundService(this@MainActivity, intent)
+                    ServiceTrace.log("foreground service ${Settings.serviceClass().simpleName} requested")
+                } catch (e: Exception) {
+                    ServiceTrace.log("could not start the foreground service: $e")
+                    onServiceAlert(Alert.StartService, e.message)
+                }
             }
             Settings.startedByUser = true
         }
@@ -89,12 +98,15 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
         try {
             val intent = VpnService.prepare(this@MainActivity)
             if (intent != null) {
+                ServiceTrace.log("asking for the VPN permission (${intent.component?.flattenToShortString()})")
                 prepareLauncher.launch(intent)
                 true
             } else {
+                ServiceTrace.log("VPN permission already granted")
                 false
             }
         } catch (e: Exception) {
+            ServiceTrace.log("VPN permission request failed: $e")
             onServiceAlert(Alert.RequestVPNPermission, e.message)
             true
         }
@@ -103,6 +115,7 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
         registerForActivityResult(
             ActivityResultContracts.RequestPermission(),
         ) { isGranted ->
+            ServiceTrace.log("notification permission granted: $isGranted")
             if (Settings.dynamicNotification && !isGranted) {
                 onServiceAlert(Alert.RequestNotificationPermission, null)
             } else {
@@ -114,6 +127,7 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult(),
         ) { result ->
+            ServiceTrace.log("VPN permission dialog result: ${result.resultCode} (OK is $RESULT_OK)")
             if (result.resultCode == RESULT_OK) {
                 startService0()
             } else {
@@ -126,6 +140,7 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
     }
 
     override fun onServiceAlert(type: Alert, message: String?) {
+        ServiceTrace.log("alert: $type ${message ?: ""}")
         serviceAlerts.postValue(ServiceEvent(Status.Stopped, type, message))
     }
 

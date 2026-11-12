@@ -88,6 +88,7 @@ class VPNService : VpnService(), PlatformInterfaceWrapper {
         }
 
         if (!hasPermission) {
+             com.hiddify.hiddify.ServiceTrace.log("vpn: no VPN permission when opening the tunnel")
              error("android: missing vpn permission")
     }
 //        service.fileDescriptor?.close()
