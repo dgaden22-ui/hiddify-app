@@ -145,7 +145,10 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
     }
     loggy.info("Waiting for starting core finished");
 
-    if (!await waitUntilPort(portBack, true, null)) {
+    // DgadenVPN: give the core up to ~30 s to open its port. The original ~2 s
+    // here was too short for slow Android TV boxes: the app gave up and stopped
+    // a core that was still starting ("VPN connected", then "disconnected").
+    if (!await waitUntilPort(portBack, true, null, maxTry: 150)) {
       await _logServiceTrace();
       await stopMethodChannel();
       return const CoreStatus.stopped(alert: CoreAlert.startService, message: "starting background core...");
