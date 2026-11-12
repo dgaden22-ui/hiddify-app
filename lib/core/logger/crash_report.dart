@@ -28,9 +28,21 @@ Future<void> reportPreviousExit() async {
     // to stderr2.log. This runs before the core starts again, so the crashed
     // run's text is still in stderr2.log (.old holds the run before it).
     if (text.contains('CRASH_NATIVE')) await _reportCoreStderr(log);
+    // how far starting the VPN got before the crash (ServiceTrace.kt)
+    await _reportServiceTrace(log, dir);
   } catch (e) {
     log.warning('could not read the previous crash report: $e');
   }
+}
+
+Future<void> _reportServiceTrace(Logger log, Directory dir) async {
+  try {
+    final file = File('${dir.path}/dgaden_service_trace.txt');
+    if (!await file.exists()) return;
+    final lines = (await file.readAsLines()).where((l) => l.trim().isNotEmpty).toList();
+    final last = lines.length > 20 ? lines.sublist(lines.length - 20) : lines;
+    log.severe('VPN start steps before the crash:\n${last.join('\n')}');
+  } catch (_) {}
 }
 
 Future<void> _reportCoreStderr(Logger log) async {

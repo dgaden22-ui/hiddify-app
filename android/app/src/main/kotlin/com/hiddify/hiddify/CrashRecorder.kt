@@ -81,8 +81,34 @@ object CrashRecorder {
         }
         return "app exit at ${time.format(Date(e.timestamp))}: $reason; " +
             "process=${e.processName}, status=${e.status}, importance=${e.importance}, " +
-            "pss=${e.pss / 1024}MB, rss=${e.rss / 1024}MB" +
-            (e.description?.let { ", description: $it" } ?: "")
+            "pss=${e.pss / 1024}MB, rss=${e.rss / 1024}MB, android=${Build.VERSION.SDK_INT}, " +
+            "abi=${Build.SUPPORTED_ABIS.joinToString("/")}" +
+            (e.description?.let { ", description: $it" } ?: "") +
+            nativeTombstone(e)
+    }
+
+    /**
+     * Android 12+ keeps the tombstone of a native crash: the abort message, the signal
+     * and the backtrace with library and function names. It comes as protobuf; the
+     * readable strings in it are enough to tell what aborted (e.g. fdsan, the Go core).
+     */
+    private fun nativeTombstone(e: ApplicationExitInfo): String {
+        if (e.reason != ApplicationExitInfo.REASON_CRASH_NATIVE || Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return ""
+        }
+        return try {
+            val bytes = e.traceInputStream?.use { it.readBytes() } ?: return "; no tombstone"
+            val strings = Regex("[\\x20-\\x7E]{6,}")
+                .findAll(String(bytes, Charsets.ISO_8859_1))
+                .map { it.value.trim() }
+                .filter { it.isNotEmpty() }
+                .distinct()
+                .take(80)
+                .joinToString(" | ")
+            "; tombstone: " + strings.take(3500)
+        } catch (t: Throwable) {
+            "; tombstone unreadable: $t"
+        }
     }
 
     private fun append(context: Context, text: String) {
