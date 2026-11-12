@@ -58,7 +58,7 @@ class ConnectionButton extends HookConsumerWidget {
     // while it hot reloads, so the tap is off until that ends.
     final onTap = switch (status) {
       AsyncData(value: Connected()) when hotReloading => null,
-      AsyncData(value: Disconnected()) || AsyncError() => () => _connect(ref),
+      AsyncData(value: Disconnected()) || AsyncError() => () => connectOrAddProfile(ref),
       AsyncData(value: Connected()) => () => ref.read(connectionNotifierProvider.notifier).toggleConnection(),
       _ => null,
     };
@@ -91,18 +91,19 @@ class ConnectionButton extends HookConsumerWidget {
       useImage: today.day >= 19 && today.day <= 23 && today.month == 3,
     );
   }
+}
 
-  /// Connects, or sends the user to add a profile when there is none.
-  Future<void> _connect(WidgetRef ref) async {
-    final dialogs = ref.read(dialogNotifierProvider.notifier);
-    if (ref.read(activeProfileProvider).valueOrNull == null) {
-      await dialogs.showNoActiveProfile();
-      ref.read(bottomSheetsNotifierProvider.notifier).showAddProfile();
-      return;
-    }
-    if (await dialogs.showExperimentalFeatureNotice()) {
-      await ref.read(connectionNotifierProvider.notifier).toggleConnection();
-    }
+/// Connects, or sends the user to add a profile when there is none.
+/// Shared by the phone button and the TV home screen (DgadenVPN).
+Future<void> connectOrAddProfile(WidgetRef ref) async {
+  final dialogs = ref.read(dialogNotifierProvider.notifier);
+  if (ref.read(activeProfileProvider).valueOrNull == null) {
+    await dialogs.showNoActiveProfile();
+    ref.read(bottomSheetsNotifierProvider.notifier).showAddProfile();
+    return;
+  }
+  if (await dialogs.showExperimentalFeatureNotice()) {
+    await ref.read(connectionNotifierProvider.notifier).toggleConnection();
   }
 }
 

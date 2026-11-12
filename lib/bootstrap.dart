@@ -9,6 +9,7 @@ import 'package:hiddify/core/app_info/app_info_provider.dart';
 import 'package:hiddify/core/directories/directories_provider.dart';
 import 'package:hiddify/core/http_client/extra_root_certs.dart';
 import 'package:hiddify/core/logger/crash_report.dart';
+import 'package:hiddify/core/tv/tv_mode.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/logger/logger.dart';
 import 'package:hiddify/core/logger/logger_setup.dart';
@@ -45,6 +46,8 @@ Future<void> lazyBootstrap(WidgetsBinding widgetsBinding, Environment env) async
   trustExtraRootCertificates();
   // why the previous run died, if it crashed (Android)
   await reportPreviousExit();
+  // decides the TV layout before the first screen is built
+  await TvMode.detect();
   FlutterError.onError = Logger.logFlutterError;
   WidgetsBinding.instance.platformDispatcher.onError = Logger.logPlatformDispatcherError;
 

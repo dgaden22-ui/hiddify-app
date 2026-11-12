@@ -7,6 +7,7 @@ import 'package:hiddify/core/model/constants.dart';
 import 'package:hiddify/core/router/adaptive_layout/shell_route_action.dart';
 import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.dart';
 import 'package:hiddify/core/router/go_router/routing_config_notifier.dart';
+import 'package:hiddify/core/tv/tv_mode.dart';
 import 'package:hiddify/features/stats/widget/side_bar_stats_overview.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -30,6 +31,8 @@ class MyAdaptiveLayout extends HookConsumerWidget {
     final navScopeNode = useFocusScopeNode();
     useEffect(() {
       bool handler(KeyEvent event) {
+        // DgadenVPN: no navigation rail on TVs, so nothing to hand focus to
+        if (TvMode.isTv) return false;
         final arrows = isMobileBreakpoint ? KeyboardConst.verticalArrows : KeyboardConst.horizontalArrows;
         if (!arrows.contains(event.logicalKey)) return false;
         if (event is KeyDownEvent) {
@@ -93,7 +96,9 @@ class MyAdaptiveLayout extends HookConsumerWidget {
         },
         child: Material(
           child: Scaffold(
-            body: isMobileBreakpoint
+            // DgadenVPN: on TVs the home screen has its own large tiles and Back
+            // returns home, so the rail would only be more presses away
+            body: isMobileBreakpoint || TvMode.isTv
                 ? navigationShell
                 : Row(
                     children: [
@@ -117,7 +122,7 @@ class MyAdaptiveLayout extends HookConsumerWidget {
                       Expanded(child: navigationShell),
                     ],
                   ),
-            bottomNavigationBar: isMobileBreakpoint
+            bottomNavigationBar: isMobileBreakpoint && !TvMode.isTv
                 ? FocusScope(
                     node: navScopeNode,
                     child: NavigationBar(

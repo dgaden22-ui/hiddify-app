@@ -10,8 +10,10 @@ import 'package:hiddify/core/router/go_router/helper/custom_transition.dart';
 import 'package:hiddify/core/router/go_router/refresh_listenable.dart';
 import 'package:hiddify/features/about/widget/about_page.dart';
 import 'package:hiddify/features/app_based_routing/overview/app_list_page.dart';
+import 'package:hiddify/core/tv/tv_mode.dart';
 import 'package:hiddify/features/app_based_routing/widget/app_routing_tab_page.dart';
 import 'package:hiddify/features/home/widget/home_page.dart';
+import 'package:hiddify/features/home/widget/tv_home_page.dart';
 import 'package:hiddify/features/intro/widget/intro_page.dart';
 import 'package:hiddify/features/log/overview/logs_page.dart';
 import 'package:hiddify/features/profile/details/profile_details_page.dart';
@@ -131,7 +133,11 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                 GoRoute(
                   name: 'home',
                   path: '/home',
-                  builder: (_, _) => FocusScope(node: branchesScope['home'], child: const HomePage()),
+                  builder: (_, _) => FocusScope(
+                    node: branchesScope['home'],
+                    // DgadenVPN: a remote-friendly home screen on TVs
+                    child: TvMode.isTv ? const TvHomePage() : const HomePage(),
+                  ),
                   routes: <GoRoute>[
                     GoRoute(
                       name: 'proxies',

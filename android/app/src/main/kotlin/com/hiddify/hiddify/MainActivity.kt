@@ -49,6 +49,14 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
         flutterEngine.plugins.add(PlatformSettingsHandler())
         flutterEngine.plugins.add(EventHandler())
         flutterEngine.plugins.add(LogHandler())
+        // DgadenVPN: lets the app switch to its TV layout on Android TV / Google TV
+        io.flutter.plugin.common.MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.dgaden.vpn/device")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "isTv" -> result.success(isTelevision())
+                    else -> result.notImplemented()
+                }
+            }
 //        flutterEngine.plugins.add(GroupsChannel(lifecycleScope))
 //        flutterEngine.plugins.add(ActiveGroupsChannel(lifecycleScope))
 //        flutterEngine.plugins.add(StatsChannel(lifecycleScope))
@@ -56,6 +64,12 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
 
     fun reconnect() {
         connection.reconnect()
+    }
+
+    private fun isTelevision(): Boolean {
+        val uiMode = getSystemService(android.content.Context.UI_MODE_SERVICE) as? android.app.UiModeManager
+        return uiMode?.currentModeType == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION ||
+            packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_LEANBACK)
     }
 
     @SuppressLint("NewApi")

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.dart';
+import 'package:hiddify/core/tv/tv_mode.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/settings/notifier/config_option/config_option_notifier.dart';
 import 'package:hiddify/features/settings/notifier/reset_tunnel/reset_tunnel_notifier.dart';
@@ -184,7 +185,8 @@ class SettingsPage extends HookConsumerWidget {
                 },
               ),
             ),
-          if (Breakpoint(context).isMobile()) ...[
+          // DgadenVPN: TVs have no navigation rail, so logs and about live here too
+          if (Breakpoint(context).isMobile() || TvMode.isTv) ...[
             SettingsSection(
               title: t.pages.logs.title,
               icon: Icons.description_rounded,
