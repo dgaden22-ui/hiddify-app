@@ -24,7 +24,36 @@ Future<void> reportPreviousExit() async {
     for (final entry in text.split(RegExp(r'\n(?=app exit at |uncaught exception)'))) {
       log.severe('previous run ended: $entry');
     }
+    // the VPN core (Go) writes why it died to stderr, which the app redirects
+    // to stderr2.log; the core keeps the previous run's file as .old
+    if (text.contains('CRASH_NATIVE')) await _reportCoreStderr(log);
   } catch (e) {
     log.warning('could not read the previous crash report: $e');
   }
+}
+
+Future<void> _reportCoreStderr(Logger log) async {
+  final dirs = <Directory?>[];
+  try {
+    dirs.add(await getExternalStorageDirectory());
+  } catch (_) {}
+  try {
+    dirs.add(await getApplicationDocumentsDirectory());
+  } catch (_) {}
+  final marker = RegExp(r'^(panic:|fatal error:|SIG[A-Z]+|runtime:|unexpected fault)', multiLine: true);
+  for (final dir in dirs.whereType<Directory>()) {
+    for (final name in ['stderr2.log.old', 'stderr2.log']) {
+      try {
+        final file = File('${dir.path}/$name');
+        if (!await file.exists()) continue;
+        final text = await file.readAsString();
+        final start = marker.firstMatch(text)?.start;
+        if (start == null) continue;
+        final excerpt = text.substring(start);
+        log.severe('core error ($name): ${excerpt.length > 3000 ? excerpt.substring(0, 3000) : excerpt}');
+        return;
+      } catch (_) {}
+    }
+  }
+  log.warning('the VPN core left no error text in stderr2.log');
 }

@@ -13,6 +13,7 @@ import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/constants.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
+import 'package:hiddify/core/tv/tv_mode.dart';
 import 'package:hiddify/features/common/general_pref_tiles.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/features/settings/widget/preference_tile.dart';
@@ -171,6 +172,11 @@ class IntroPage extends HookConsumerWidget with PresLogger {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        // DgadenVPN: on a TV remote the corner button was hard to reach and its
+        // focus hard to see; there it has focus from the start and a clear glow
+        autofocus: TvMode.isTv,
+        focusColor: TvMode.isTv ? Colors.white.withValues(alpha: 0.35) : null,
+        focusElevation: TvMode.isTv ? 12 : null,
         icon: isStarting.value
             ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator())
             : const Icon(Icons.rocket_launch),
