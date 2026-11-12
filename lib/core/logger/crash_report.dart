@@ -25,7 +25,8 @@ Future<void> reportPreviousExit() async {
       log.severe('previous run ended: $entry');
     }
     // the VPN core (Go) writes why it died to stderr, which the app redirects
-    // to stderr2.log; the core keeps the previous run's file as .old
+    // to stderr2.log. This runs before the core starts again, so the crashed
+    // run's text is still in stderr2.log (.old holds the run before it).
     if (text.contains('CRASH_NATIVE')) await _reportCoreStderr(log);
   } catch (e) {
     log.warning('could not read the previous crash report: $e');
@@ -42,7 +43,7 @@ Future<void> _reportCoreStderr(Logger log) async {
   } catch (_) {}
   final marker = RegExp(r'^(panic:|fatal error:|SIG[A-Z]+|runtime:|unexpected fault)', multiLine: true);
   for (final dir in dirs.whereType<Directory>()) {
-    for (final name in ['stderr2.log.old', 'stderr2.log']) {
+    for (final name in ['stderr2.log', 'stderr2.log.old']) {
       try {
         final file = File('${dir.path}/$name');
         if (!await file.exists()) continue;
