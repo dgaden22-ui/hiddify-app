@@ -433,7 +433,7 @@ class HiddifyCoreService with InfraLogger {
       () => cc
           .coreInfoListener(Empty(), options: grpcOptions)
           .doOnCancel(() {
-            loggy.error("status", "Canceld");
+            loggy.debug("status listener cancelled");
             if (currentState == const CoreStatus.started()) currentState = const CoreStatus.stopped();
           })
           .doOnData((event) {
@@ -441,7 +441,7 @@ class HiddifyCoreService with InfraLogger {
             if (currentState == const CoreStatus.started()) currentState = const CoreStatus.stopped();
           })
           .doOnDone(() {
-            loggy.error("status", "done");
+            loggy.debug("status listener done");
             if (currentState == const CoreStatus.started()) currentState = const CoreStatus.stopped();
           })
           .endWith(CoreInfoResponse(coreState: CoreStates.STOPPED))
@@ -452,7 +452,7 @@ class HiddifyCoreService with InfraLogger {
           }),
       // .endWith(const CoreStatus.stopped())
       onError: (error) {
-        loggy.error("Stream error in ${key}StatusListener: $error");
+        if (!isCoreRestart(error)) loggy.error("Stream error in ${key}StatusListener: $error");
 
         // currentState = const CoreStatus.stopped();
         // statusController.add(currentState);
@@ -511,7 +511,12 @@ class HiddifyCoreService with InfraLogger {
       },
       cancelOnError: true,
       onError: (error) {
-        loggy.error('Stream error: $error');
+        // the core closes its streams every time it stops or restarts: routine, not a failure
+        if (isCoreRestart(error)) {
+          loggy.debug('stream closed by the core: $key');
+        } else {
+          loggy.error('Stream error: $error');
+        }
         onError?.call(error);
         subscriptions[key]?.cancel();
         subscriptions.remove(key);
@@ -586,3 +591,6 @@ class HiddifyCoreService with InfraLogger {
     });
   }
 }
+
+/// DgadenVPN: the gRPC error every open stream gets when the core stops or restarts.
+bool isCoreRestart(Object error) => '$error'.contains('Connection is being forcefully terminated');
