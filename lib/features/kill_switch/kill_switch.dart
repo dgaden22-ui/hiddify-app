@@ -96,8 +96,14 @@ class WindowsKillSwitch extends Notifier<WindowsKillSwitchState> with InfraLogge
     '$_rulePrefix - tunnel',
     '$_rulePrefix - home network',
     '$_rulePrefix - dhcp',
+    '$_rulePrefix - private networks',
+    '$_rulePrefix - tailscale',
   ];
   static const _profiles = ['domainprofile', 'privateprofile', 'publicprofile'];
+
+  /// Networks that never go through the VPN anyway: other LANs behind the router and
+  /// Tailscale (100.64.0.0/10). Without this the block cut off a Synology reached over Tailscale.
+  static const _privateAddresses = '10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,100.64.0.0/10';
 
   /// The core's TUN addresses (172.19.0.1/30, fdfe:dcba:9876::1/126), with room to spare.
   static const _tunnelAddresses = '172.19.0.0/16,fdfe:dcba:9876::/48';
@@ -143,6 +149,12 @@ class WindowsKillSwitch extends Notifier<WindowsKillSwitchState> with InfraLogge
       await _netsh(['advfirewall', 'firewall', 'add', 'rule', 'name=${_ruleNames[2]}', 'dir=out', 'action=allow', 'localip=$_tunnelAddresses', 'enable=yes', 'profile=any']);
       await _netsh(['advfirewall', 'firewall', 'add', 'rule', 'name=${_ruleNames[3]}', 'dir=out', 'action=allow', 'remoteip=LocalSubnet', 'enable=yes', 'profile=any']);
       await _netsh(['advfirewall', 'firewall', 'add', 'rule', 'name=${_ruleNames[4]}', 'dir=out', 'action=allow', 'protocol=UDP', 'localport=68', 'remoteport=67', 'enable=yes', 'profile=any']);
+      await _netsh(['advfirewall', 'firewall', 'add', 'rule', 'name=${_ruleNames[5]}', 'dir=out', 'action=allow', 'remoteip=$_privateAddresses', 'enable=yes', 'profile=any']);
+      // Tailscale's own WireGuard traffic, so its peers stay reachable while the VPN is down
+      final tailscaled = File('${Platform.environment['ProgramFiles'] ?? r'C:\Program Files'}\\Tailscale\\tailscaled.exe');
+      if (tailscaled.existsSync()) {
+        await _netsh(['advfirewall', 'firewall', 'add', 'rule', 'name=${_ruleNames[6]}', 'dir=out', 'action=allow', 'program=${tailscaled.path}', 'enable=yes', 'profile=any']);
+      }
       final saved = _savedPolicies();
       for (var i = 0; i < _profiles.length; i++) {
         await _netsh(['advfirewall', 'set', _profiles[i], 'firewallpolicy', '${saved[i].inbound},BlockOutbound']);
