@@ -54,6 +54,8 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "isTv" -> result.success(isTelevision())
+                    "openVpnSettings" -> result.success(openVpnSettings())
+                    "killSwitchStatus" -> result.success(killSwitchStatus())
                     else -> result.notImplemented()
                 }
             }
@@ -64,6 +66,37 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
 
     fun reconnect() {
         connection.reconnect()
+    }
+
+    /**
+     * DgadenVPN Kill Switch on Android is the system's own: "Always-on VPN" plus
+     * "Block connections without VPN" in the VPN settings. An app cannot turn it on
+     * itself; it can open that screen and, while its VPN runs, read the two switches.
+     */
+    private fun openVpnSettings(): Boolean {
+        for (action in listOf(
+            android.provider.Settings.ACTION_VPN_SETTINGS,
+            android.provider.Settings.ACTION_WIRELESS_SETTINGS,
+            android.provider.Settings.ACTION_SETTINGS,
+        )) {
+            try {
+                startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                return true
+            } catch (_: Exception) {
+            }
+        }
+        return false
+    }
+
+    private fun killSwitchStatus(): Map<String, Any?> {
+        val vpn = com.hiddify.hiddify.bg.VPNService.current
+        val canRead = vpn != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        return mapOf(
+            "sdk" to Build.VERSION.SDK_INT,
+            "vpnRunning" to (vpn != null),
+            "alwaysOn" to if (canRead) vpn!!.isAlwaysOn else null,
+            "lockdown" to if (canRead) vpn!!.isLockdownEnabled else null,
+        )
     }
 
     private fun isTelevision(): Boolean {

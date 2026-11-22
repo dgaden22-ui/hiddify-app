@@ -22,9 +22,18 @@ class VPNService : VpnService(), PlatformInterfaceWrapper {
 
     companion object {
         private const val TAG = "A/VPNService"
+
+        /** DgadenVPN: the running service, so the app can ask whether Android's kill switch is on. */
+        @Volatile
+        var current: VPNService? = null
     }
 
     private val service = BoxService(this, this)
+
+    override fun onCreate() {
+        super.onCreate()
+        current = this
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int) =
         service.onStartCommand()
@@ -38,6 +47,7 @@ class VPNService : VpnService(), PlatformInterfaceWrapper {
     }
 
     override fun onDestroy() {
+        current = null
         service.onDestroy()
     }
 

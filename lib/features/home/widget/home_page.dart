@@ -5,6 +5,7 @@ import 'package:hiddify/core/app_info/app_info_provider.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:hiddify/features/home/widget/connection_button.dart';
+import 'package:hiddify/features/kill_switch/kill_switch_page.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/profile/widget/profile_tile.dart';
 import 'package:hiddify/features/proxy/active/active_proxy_card.dart';
@@ -108,6 +109,7 @@ class HomePage extends HookConsumerWidget {
                           ),
                           _ => const Text(""),
                         },
+                        const KillSwitchBanner(),
                         const SliverFillRemaining(
                           hasScrollBody: false,
                           child: Column(

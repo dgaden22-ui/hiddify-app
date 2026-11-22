@@ -5,6 +5,7 @@ import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.dart';
 import 'package:hiddify/core/tv/tv_mode.dart';
+import 'package:hiddify/features/kill_switch/kill_switch.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/settings/notifier/config_option/config_option_notifier.dart';
 import 'package:hiddify/features/settings/notifier/reset_tunnel/reset_tunnel_notifier.dart';
@@ -154,6 +155,13 @@ class SettingsPage extends HookConsumerWidget {
               icon: Icons.webhook_rounded,
               subtitle: Text(t.pages.settings.chain.subtitle),
               namedLocation: context.namedLocation('chainOptions'),
+            ),
+          if (killSwitchSupported)
+            SettingsSection(
+              title: t.pages.settings.killSwitch.title,
+              icon: Icons.shield_rounded,
+              subtitle: Text(t.pages.settings.killSwitch.subtitle),
+              namedLocation: context.namedLocation('killSwitch'),
             ),
           SettingsSection(
             title: t.pages.settings.routing.title,

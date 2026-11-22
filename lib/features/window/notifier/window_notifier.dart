@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
+import 'package:hiddify/features/kill_switch/kill_switch.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:screen_retriever/screen_retriever.dart';
@@ -125,6 +126,14 @@ class WindowNotifier extends _$WindowNotifier with AppLogger {
         .timeout(const Duration(seconds: 2))
         .catchError((e) {
           loggy.warning("error aborting connection on quit", e);
+        });
+    // quitting is leaving the VPN on purpose: never leave the internet blocked behind
+    await ref
+        .read(windowsKillSwitchProvider.notifier)
+        .release(reason: 'app quit')
+        .timeout(const Duration(seconds: 10))
+        .catchError((e) {
+          loggy.warning("error releasing the kill switch on quit", e);
         });
     await trayManager.destroy();
     await windowManager.destroy();

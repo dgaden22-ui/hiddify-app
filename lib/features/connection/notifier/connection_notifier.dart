@@ -9,6 +9,7 @@ import 'package:hiddify/features/connection/data/connection_repository.dart';
 import 'package:hiddify/features/connection/model/connection_failure.dart';
 import 'package:hiddify/features/connection/model/connection_status.dart';
 import 'package:hiddify/features/connection/model/startup_connection.dart';
+import 'package:hiddify/features/kill_switch/kill_switch.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/hiddifycore/init_signal.dart';
@@ -55,6 +56,11 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
     ref.watch(coreRestartSignalProvider);
 
     yield* _connectionRepo.watchConnectionStatus().doOnData((event) {
+      // DgadenVPN Kill Switch (Windows): block everything outside the VPN once it is up.
+      // A drop or a crash leaves the block in place; only _disconnect releases it.
+      if (event case Connected()) {
+        Future.microtask(() => ref.read(windowsKillSwitchProvider.notifier).onConnected());
+      }
       if (event case Disconnected(connectionFailure: final _?) when PlatformUtils.isDesktop) {
         Future.microtask(() => ref.read(Preferences.startedByUser.notifier).update(false));
       }
@@ -193,6 +199,9 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
   }
 
   Future<void> _disconnect() async {
+    // the user is leaving the VPN on purpose: give the internet back first, while
+    // the tunnel still carries the traffic, so the release never races the quit timeout
+    await ref.read(windowsKillSwitchProvider.notifier).release(reason: 'disconnected by the user');
     await _connectionRepo.disconnect().mapLeft((err) {
       loggy.warning("error disconnecting", err);
       ref
