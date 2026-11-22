@@ -41,7 +41,8 @@ final _cidrPrefixRegex = RegExp(r'^(0|[1-9]\d{0,2})$');
 
 final _domainRegex = RegExp(r'^([a-zA-Z\d\-]+\.)+[a-zA-Z\d\-]{2,}$', caseSensitive: false);
 
-final _domainSuffix = RegExp(r'^\.[a-zA-Z\d\-]{2,}$', caseSensitive: false);
+// DgadenVPN: sing-box matches a suffix by labels, so "ortoart.ru" and ".ortoart.ru" are as valid as ".ru"
+final _domainSuffix = RegExp(r'^\.?([a-zA-Z\d\-]+\.)*[a-zA-Z\d\-]{2,}$', caseSensitive: false);
 
 /// https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url/3809435#3809435
 bool isUrl(String input) {
