@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hiddify/core/localization/translations.dart';
+import 'package:hiddify/features/connection/model/connection_status.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/features/kill_switch/kill_switch.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -193,10 +195,22 @@ class KillSwitchBanner extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!Platform.isWindows) return const SizedBox.shrink();
     final ks = ref.watch(windowsKillSwitchProvider);
-    final connected = ref.watch(serviceRunningProvider);
-    if (!ks.engaged || connected) return const SizedBox.shrink();
+    // Only a settled "disconnected" counts. The status stream briefly reports
+    // loading or an error whenever the core's streams reconnect (window focus,
+    // network changes such as RuDesktop starting), which showed the banner
+    // while the VPN was up and pages loaded fine.
+    final disconnected = ref.watch(connectionNotifierProvider).valueOrNull is Disconnected;
+    final show = useState(false);
+    useEffect(() {
+      if (!disconnected || !ks.engaged) {
+        show.value = false;
+        return null;
+      }
+      final timer = Timer(const Duration(seconds: 3), () => show.value = true);
+      return timer.cancel;
+    }, [disconnected, ks.engaged]);
+    if (!Platform.isWindows || !show.value) return const SizedBox.shrink();
     final t = ref.watch(translationsProvider).requireValue;
     final k = t.pages.settings.killSwitch;
     final scheme = Theme.of(context).colorScheme;
