@@ -272,6 +272,35 @@
         "useXrayCoreWhenPossible": "Use xray-core when possible",
         "useXrayCoreWhenPossibleMsg": "Use xray-core when parsing subscription links. Reimport the subscription to turn this on."
       },
+      "killSwitch": {
+        "title": "Kill switch",
+        "subtitle": "Block the internet if VPN drops",
+        "description": "If the VPN connection drops, all internet traffic is blocked until it reconnects. Your real IP address stays hidden.",
+        "statusOn": "On",
+        "statusOff": "Off",
+        "android": {
+          "step1": "Open VPN settings.",
+          "step2": "Tap the gear next to DgadenVPN.",
+          "step3": "Turn on Always-on VPN and Block connections without VPN.",
+          "openSettings": "Open VPN settings",
+          "alwaysOn": "Always-on VPN",
+          "lockdown": "Block connections without VPN",
+          "statusUnknown": "Connect to VPN to see the status",
+          "statusOld": "This Android version doesn't show the status. Check it in VPN settings.",
+          "note": "While it's on, apps can't go online without the VPN, even if DgadenVPN closes."
+        },
+        "windows": {
+          "enable": "Turn on kill switch",
+          "enableSubtitle": "Uses Windows Firewall. Your home network stays reachable.",
+          "needsAdmin": "To use the kill switch, run DgadenVPN as administrator",
+          "engaged": "Internet is blocked until the VPN connects",
+          "unblock": "Unblock",
+          "failed": "Couldn't change Windows Firewall",
+          "step1": "The block starts when the VPN connects.",
+          "step2": "It stays if the VPN drops or the app closes unexpectedly.",
+          "step3": "It ends when you disconnect, quit, or turn off the kill switch."
+        }
+      },
       "routing": {
         "title": "Routing",
         "routeRule": {
